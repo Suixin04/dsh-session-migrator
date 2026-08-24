@@ -1,0 +1,10 @@
+node_modules/
+.npm-cache/
+.dsh-integration/
+.client-bundle.cjs
+.integration-*
+.second-import.json
+.workspace-list.json
+.session-list.json
+.history.json
+*.tgz
