@@ -751,37 +751,45 @@ window.__ModuleLoader__.load({
     var import_jsx_runtime = require("react/jsx-runtime");
     var NS = "sessionMigrator";
     var dictionaries = {
-      "zh-CN": {
-        title: "\u5BFC\u5165 Session",
+      zh: {
+        title: "\u5BFC\u5165\u4F1A\u8BDD",
         button: "\u5BFC\u5165\u4F1A\u8BDD",
-        hint: "\u62D6\u5165 Session ZIP\u3001session.jsonl \u6216\u5BFC\u51FA\u6587\u4EF6\u5939",
-        choose: "\u9009\u62E9\u6587\u4EF6",
-        chooseFolder: "\u9009\u62E9\u6587\u4EF6\u5939",
-        cancel: "\u53D6\u6D88",
+        buttonTitle: "\u5BFC\u5165 DeepSeek Harness \u4F1A\u8BDD",
+        close: "\u5173\u95ED",
+        intro: "\u62D6\u5165\u4F1A\u8BDD ZIP\u3001session.jsonl \u6216\u5B8C\u6574\u5BFC\u51FA\u6587\u4EF6\u5939\uFF0C\u7136\u540E\u9009\u62E9\u76EE\u6807\u5DE5\u4F5C\u533A\u3002\u91CD\u590D\u4F1A\u8BDD\u4F1A\u81EA\u52A8\u514B\u9686\uFF0C\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6570\u636E\u3002",
+        chooseArchive: "\u9009\u62E9 ZIP / JSONL",
+        chooseFolder: "\u9009\u62E9\u5BFC\u51FA\u6587\u4EF6\u5939",
+        selected: "\u5DF2\u9009\u62E9 {n} \u4E2A\u6587\u4EF6",
+        noneSelected: "\u5C1A\u672A\u9009\u62E9\u6587\u4EF6",
+        missingSource: "\u8BF7\u5148\u9009\u62E9\u6216\u62D6\u5165\u4F1A\u8BDD\u5BFC\u51FA\u6587\u4EF6\u3002",
         importing: "\u6B63\u5728\u89E3\u6790\u5E76\u5BFC\u5165\u2026",
-        target: "\u62D6\u5230\u76EE\u6807\u5DE5\u4F5C\u533A",
         dropHere: "\u91CA\u653E\u5230\u6B64\u5DE5\u4F5C\u533A",
         success: "\u5BFC\u5165\u6210\u529F",
-        clone: "\u68C0\u6D4B\u5230\u91CD\u590D Session\uFF0C\u5DF2\u81EA\u52A8\u521B\u5EFA\u526F\u672C\u3002",
-        original: "\u5DF2\u4FDD\u7559\u539F Session ID\u3002",
+        clone: "\u68C0\u6D4B\u5230\u91CD\u590D\u4F1A\u8BDD\uFF0C\u5DF2\u81EA\u52A8\u521B\u5EFA\u526F\u672C\u3002",
+        original: "\u5DF2\u4FDD\u7559\u539F\u4F1A\u8BDD ID\u3002",
+        summary: "\u5171\u5BFC\u5165 {n} \u4E2A\u4F1A\u8BDD \xB7 \u6839\u4F1A\u8BDD {id}",
         open: "\u6253\u5F00\u5BFC\u5165\u7684\u4F1A\u8BDD",
-        close: "\u5173\u95ED"
+        uploadFailed: "\u5BFC\u5165\u5931\u8D25\uFF08HTTP {status}\uFF09"
       },
       en: {
-        title: "Import Session",
-        button: "Import session",
-        hint: "Drop a Session ZIP, session.jsonl, or exported folder",
-        choose: "Choose file",
-        chooseFolder: "Choose folder",
-        cancel: "Cancel",
+        title: "Import sessions",
+        button: "Import sessions",
+        buttonTitle: "Import DeepSeek Harness sessions",
+        close: "Close",
+        intro: "Drop a session ZIP, session.jsonl, or a complete export folder, then choose the target workspace. Duplicate sessions are cloned automatically and never overwrite existing data.",
+        chooseArchive: "Choose ZIP / JSONL",
+        chooseFolder: "Choose export folder",
+        selected: "{n} files selected",
+        noneSelected: "No files selected",
+        missingSource: "Choose or drop a session export first.",
         importing: "Parsing and importing\u2026",
-        target: "Drop onto a target workspace",
         dropHere: "Drop into this workspace",
         success: "Import complete",
-        clone: "A duplicate was detected and imported as a cloned Session tree.",
-        original: "Original Session IDs were preserved.",
-        open: "Open imported Session",
-        close: "Close"
+        clone: "A duplicate was detected and imported as a cloned session tree.",
+        original: "Original session IDs were preserved.",
+        summary: "{n} sessions imported \xB7 Root session {id}",
+        open: "Open imported session",
+        uploadFailed: "Import failed (HTTP {status})"
       }
     };
     var css = `
@@ -827,7 +835,7 @@ window.__ModuleLoader__.load({
       for (const [path, file] of pairs) entries[path.replaceAll("\\", "/")] = new Uint8Array(await file.arrayBuffer());
       return new File([zipSync(entries, { level: 6 })], "dsh-session-folder.zip", { type: "application/zip" });
     }
-    async function upload(file, workspaceId) {
+    async function upload(file, workspaceId, t) {
       const url = new URL("/api/session.import", hostBase());
       url.searchParams.set("workspaceId", workspaceId);
       const response = await fetch(url, {
@@ -836,10 +844,10 @@ window.__ModuleLoader__.load({
         body: file
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `Import failed (${response.status})`);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || t("uploadFailed", { status: response.status }));
       return payload.result;
     }
-    function ImportApp({ ctx, wide = true, useWorkspaces }) {
+    function ImportApp({ ctx, wide = true, useWorkspaces, t }) {
       const [open, setOpen] = (0, import_react.useState)(false);
       const [pairs, setPairs] = (0, import_react.useState)(null);
       const [phase, setPhase] = (0, import_react.useState)("idle");
@@ -888,13 +896,13 @@ window.__ModuleLoader__.load({
       };
       const importTo = async (workspaceId, sourcePairs = pairs) => {
         if (!sourcePairs?.length) {
-          setError("\u8BF7\u5148\u9009\u62E9\u6216\u62D6\u5165 Session \u5BFC\u51FA\u6587\u4EF6\u3002");
+          setError(t("missingSource"));
           return;
         }
         setPhase("importing");
         setError("");
         try {
-          const imported = await upload(await archiveFromPairs(sourcePairs), workspaceId);
+          const imported = await upload(await archiveFromPairs(sourcePairs), workspaceId, t);
           setResult(imported);
           setPhase("done");
           await Promise.allSettled([ctx.sessions.refresh?.(), ctx.workspaces.refresh?.()]);
@@ -904,34 +912,30 @@ window.__ModuleLoader__.load({
         }
       };
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", title: "Import Session", onClick: () => setOpen(true), children: wide ? "\u5BFC\u5165\u4F1A\u8BDD" : "\u21E9" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", title: t("buttonTitle"), onClick: () => setOpen(true), children: wide ? t("button") : "\u21E9" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { ref: fileRef, hidden: true, type: "file", accept: ".zip,.jsonl,application/zip", onChange: (event) => pickFiles(event.target.files) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { ref: folderRef, hidden: true, type: "file", webkitdirectory: "", directory: "", multiple: true, onChange: (event) => pickFiles(event.target.files) }),
         open && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-overlay", onMouseDown: (event) => {
           if (event.target === event.currentTarget && phase !== "importing") setOpen(false);
-        }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-panel", children: [
+        }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-panel", role: "dialog", "aria-modal": "true", "aria-label": t("title"), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-head", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "\u5BFC\u5165 Session" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", disabled: phase === "importing", onClick: () => setOpen(false), children: "\u5173\u95ED" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: t("title") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", disabled: phase === "importing", onClick: () => setOpen(false), children: t("close") })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-hint", children: "\u62D6\u5165 Session ZIP\u3001session.jsonl \u6216\u5B8C\u6574\u5BFC\u51FA\u6587\u4EF6\u5939\uFF0C\u7136\u540E\u9009\u62E9\u76EE\u6807\u5DE5\u4F5C\u533A\u3002\u91CD\u590D Session \u4F1A\u81EA\u52A8\u514B\u9686\uFF0C\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u4F1A\u8BDD\u3002" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-hint", children: t("intro") }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => fileRef.current?.click(), children: "\u9009\u62E9 ZIP / JSONL" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => folderRef.current?.click(), children: "\u9009\u62E9\u5BFC\u51FA\u6587\u4EF6\u5939" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => fileRef.current?.click(), children: t("chooseArchive") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => folderRef.current?.click(), children: t("chooseFolder") })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-hint", children: pairs?.length ? `\u5DF2\u9009\u62E9 ${pairs.length} \u4E2A\u6587\u4EF6` : "\u5C1A\u672A\u9009\u62E9\u6587\u4EF6" }),
-          phase === "importing" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-status", children: "\u6B63\u5728\u89E3\u6790\u5E76\u5BFC\u5165\u2026" }) : result ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-status dsm-success", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "\u5BFC\u5165\u6210\u529F" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: result.cloned ? "\u68C0\u6D4B\u5230\u91CD\u590D Session\uFF0C\u5DF2\u81EA\u52A8\u521B\u5EFA\u526F\u672C\u3002" : "\u5DF2\u4FDD\u7559\u539F Session ID\u3002" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-              result.sessionIds.length,
-              " \u4E2A Session \xB7 \u6839\u4F1A\u8BDD ",
-              result.rootSessionId
-            ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-hint", children: pairs?.length ? t("selected", { n: pairs.length }) : t("noneSelected") }),
+          phase === "importing" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-status", children: t("importing") }) : result ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-status dsm-success", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: t("success") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: result.cloned ? t("clone") : t("original") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: t("summary", { n: result.sessionIds.length, id: result.rootSessionId }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => {
               ctx.sessions.open(result.rootSessionId);
               setOpen(false);
-            }, children: "\u6253\u5F00\u5BFC\u5165\u7684\u4F1A\u8BDD" })
+            }, children: t("open") })
           ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-targets", children: workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: "dsm-target", "data-over": over === workspace.workspaceId, onDragOver: (event) => {
             event.preventDefault();
             setOver(workspace.workspaceId);
@@ -944,7 +948,7 @@ window.__ModuleLoader__.load({
           }, onClick: () => importTo(workspace.workspaceId), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: workspace.title }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: workspace.path }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u91CA\u653E\u5230\u6B64\u5DE5\u4F5C\u533A" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t("dropHere") })
           ] }, workspace.workspaceId)) }),
           error && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-error", children: error })
         ] }) })
@@ -953,8 +957,8 @@ window.__ModuleLoader__.load({
     var inject = ["slots", "locale", "sessions", "workspaces"];
     function apply(ctx) {
       injectCss();
-      for (const [locale, dict] of Object.entries(dictionaries)) ctx.effect(() => ctx.locale.register(NS, locale, dict));
-      ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({ name: "sidebar.footer.action", id: "session-migrator", order: 50, inject: () => ({ ctx }) }, ImportApp));
+      ctx.effect(() => ctx.locale.register(NS, dictionaries));
+      ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({ name: "sidebar.footer.action", id: "session-migrator", order: 50, locale: NS, inject: () => ({ ctx }) }, ImportApp));
     }
 
     return module.exports;

@@ -1,7 +1,7 @@
 {
   "name": "dsh-session-migrator",
-  "version": "0.2.0",
-  "description": "Import DeepSeek Harness Session export archives into a selected workspace",
+  "version": "0.2.1",
+  "description": "Visual cross-device session migration for DeepSeek Harness with drag-and-drop workspace import",
   "type": "module",
   "main": "./index.js",
   "exports": {
@@ -15,9 +15,27 @@
     "client.js",
     "core.js",
     "cordis.patch.yml",
-    "README.md"
+    "README.md",
+    "README.zh-CN.md",
+    "docs/images/*.png"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Suixin04/dsh-session-migrator.git"
+  },
+  "homepage": "https://github.com/Suixin04/dsh-session-migrator#readme",
+  "bugs": {
+    "url": "https://github.com/Suixin04/dsh-session-migrator/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "session-migration",
+    "data-portability",
+    "drag-and-drop",
+    "jsonl"
+  ],
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

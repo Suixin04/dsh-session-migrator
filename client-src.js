@@ -3,37 +3,45 @@ import { zipSync } from 'fflate'
 
 const NS = 'sessionMigrator'
 const dictionaries = {
-  'zh-CN': {
-    title: '导入 Session',
+  zh: {
+    title: '导入会话',
     button: '导入会话',
-    hint: '拖入 Session ZIP、session.jsonl 或导出文件夹',
-    choose: '选择文件',
-    chooseFolder: '选择文件夹',
-    cancel: '取消',
+    buttonTitle: '导入 DeepSeek Harness 会话',
+    close: '关闭',
+    intro: '拖入会话 ZIP、session.jsonl 或完整导出文件夹，然后选择目标工作区。重复会话会自动克隆，不会覆盖已有数据。',
+    chooseArchive: '选择 ZIP / JSONL',
+    chooseFolder: '选择导出文件夹',
+    selected: '已选择 {n} 个文件',
+    noneSelected: '尚未选择文件',
+    missingSource: '请先选择或拖入会话导出文件。',
     importing: '正在解析并导入…',
-    target: '拖到目标工作区',
     dropHere: '释放到此工作区',
     success: '导入成功',
-    clone: '检测到重复 Session，已自动创建副本。',
-    original: '已保留原 Session ID。',
+    clone: '检测到重复会话，已自动创建副本。',
+    original: '已保留原会话 ID。',
+    summary: '共导入 {n} 个会话 · 根会话 {id}',
     open: '打开导入的会话',
-    close: '关闭',
+    uploadFailed: '导入失败（HTTP {status}）',
   },
   en: {
-    title: 'Import Session',
-    button: 'Import session',
-    hint: 'Drop a Session ZIP, session.jsonl, or exported folder',
-    choose: 'Choose file',
-    chooseFolder: 'Choose folder',
-    cancel: 'Cancel',
+    title: 'Import sessions',
+    button: 'Import sessions',
+    buttonTitle: 'Import DeepSeek Harness sessions',
+    close: 'Close',
+    intro: 'Drop a session ZIP, session.jsonl, or a complete export folder, then choose the target workspace. Duplicate sessions are cloned automatically and never overwrite existing data.',
+    chooseArchive: 'Choose ZIP / JSONL',
+    chooseFolder: 'Choose export folder',
+    selected: '{n} files selected',
+    noneSelected: 'No files selected',
+    missingSource: 'Choose or drop a session export first.',
     importing: 'Parsing and importing…',
-    target: 'Drop onto a target workspace',
     dropHere: 'Drop into this workspace',
     success: 'Import complete',
-    clone: 'A duplicate was detected and imported as a cloned Session tree.',
-    original: 'Original Session IDs were preserved.',
-    open: 'Open imported Session',
-    close: 'Close',
+    clone: 'A duplicate was detected and imported as a cloned session tree.',
+    original: 'Original session IDs were preserved.',
+    summary: '{n} sessions imported · Root session {id}',
+    open: 'Open imported session',
+    uploadFailed: 'Import failed (HTTP {status})',
   },
 }
 
@@ -86,7 +94,7 @@ async function archiveFromPairs(pairs) {
   return new File([zipSync(entries, { level: 6 })], 'dsh-session-folder.zip', { type: 'application/zip' })
 }
 
-async function upload(file, workspaceId) {
+async function upload(file, workspaceId, t) {
   const url = new URL('/api/session.import', hostBase())
   url.searchParams.set('workspaceId', workspaceId)
   const response = await fetch(url, {
@@ -95,11 +103,11 @@ async function upload(file, workspaceId) {
     body: file,
   })
   const payload = await response.json().catch(() => null)
-  if (!response.ok || !payload?.ok) throw new Error(payload?.error || `Import failed (${response.status})`)
+  if (!response.ok || !payload?.ok) throw new Error(payload?.error || t('uploadFailed', { status: response.status }))
   return payload.result
 }
 
-function ImportApp({ ctx, wide = true, useWorkspaces }) {
+function ImportApp({ ctx, wide = true, useWorkspaces, t }) {
   const [open, setOpen] = useState(false)
   const [pairs, setPairs] = useState(null)
   const [phase, setPhase] = useState('idle')
@@ -134,26 +142,26 @@ function ImportApp({ ctx, wide = true, useWorkspaces }) {
     if (next.length) { setPairs(next); setOpen(true); setError(''); setResult(null) }
   }
   const importTo = async (workspaceId, sourcePairs = pairs) => {
-    if (!sourcePairs?.length) { setError('请先选择或拖入 Session 导出文件。'); return }
+    if (!sourcePairs?.length) { setError(t('missingSource')); return }
     setPhase('importing'); setError('')
     try {
-      const imported = await upload(await archiveFromPairs(sourcePairs), workspaceId)
+      const imported = await upload(await archiveFromPairs(sourcePairs), workspaceId, t)
       setResult(imported); setPhase('done')
       await Promise.allSettled([ctx.sessions.refresh?.(), ctx.workspaces.refresh?.()])
     } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); setPhase('idle') }
   }
 
   return <>
-    <button className="dsm-button" title="Import Session" onClick={() => setOpen(true)}>{wide ? '导入会话' : '⇩'}</button>
+    <button className="dsm-button" title={t('buttonTitle')} onClick={() => setOpen(true)}>{wide ? t('button') : '⇩'}</button>
     <input ref={fileRef} hidden type="file" accept=".zip,.jsonl,application/zip" onChange={(event) => pickFiles(event.target.files)} />
     <input ref={folderRef} hidden type="file" webkitdirectory="" directory="" multiple onChange={(event) => pickFiles(event.target.files)} />
     {open && <div className="dsm-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget && phase !== 'importing') setOpen(false) }}>
-      <div className="dsm-panel">
-        <div className="dsm-head"><h2>导入 Session</h2><button className="dsm-button" disabled={phase === 'importing'} onClick={() => setOpen(false)}>关闭</button></div>
-        <p className="dsm-hint">拖入 Session ZIP、session.jsonl 或完整导出文件夹，然后选择目标工作区。重复 Session 会自动克隆，不会覆盖已有会话。</p>
-        <div className="dsm-actions"><button className="dsm-button" onClick={() => fileRef.current?.click()}>选择 ZIP / JSONL</button><button className="dsm-button" onClick={() => folderRef.current?.click()}>选择导出文件夹</button></div>
-        <p className="dsm-hint">{pairs?.length ? `已选择 ${pairs.length} 个文件` : '尚未选择文件'}</p>
-        {phase === 'importing' ? <div className="dsm-status">正在解析并导入…</div> : result ? <div className="dsm-status dsm-success"><strong>导入成功</strong><p>{result.cloned ? '检测到重复 Session，已自动创建副本。' : '已保留原 Session ID。'}</p><p>{result.sessionIds.length} 个 Session · 根会话 {result.rootSessionId}</p><button className="dsm-button" onClick={() => { ctx.sessions.open(result.rootSessionId); setOpen(false) }}>打开导入的会话</button></div> : <div className="dsm-targets">{workspaces.map((workspace) => <button key={workspace.workspaceId} className="dsm-target" data-over={over === workspace.workspaceId} onDragOver={(event) => { event.preventDefault(); setOver(workspace.workspaceId) }} onDragLeave={() => setOver(null)} onDrop={async (event) => { event.preventDefault(); event.stopPropagation(); const dropped = await filesFromDataTransfer(event.dataTransfer); setPairs(dropped); await importTo(workspace.workspaceId, dropped) }} onClick={() => importTo(workspace.workspaceId)}><strong>{workspace.title}</strong><span>{workspace.path}</span><span>释放到此工作区</span></button>)}</div>}
+      <div className="dsm-panel" role="dialog" aria-modal="true" aria-label={t('title')}>
+        <div className="dsm-head"><h2>{t('title')}</h2><button className="dsm-button" disabled={phase === 'importing'} onClick={() => setOpen(false)}>{t('close')}</button></div>
+        <p className="dsm-hint">{t('intro')}</p>
+        <div className="dsm-actions"><button className="dsm-button" onClick={() => fileRef.current?.click()}>{t('chooseArchive')}</button><button className="dsm-button" onClick={() => folderRef.current?.click()}>{t('chooseFolder')}</button></div>
+        <p className="dsm-hint">{pairs?.length ? t('selected', { n: pairs.length }) : t('noneSelected')}</p>
+        {phase === 'importing' ? <div className="dsm-status">{t('importing')}</div> : result ? <div className="dsm-status dsm-success"><strong>{t('success')}</strong><p>{result.cloned ? t('clone') : t('original')}</p><p>{t('summary', { n: result.sessionIds.length, id: result.rootSessionId })}</p><button className="dsm-button" onClick={() => { ctx.sessions.open(result.rootSessionId); setOpen(false) }}>{t('open')}</button></div> : <div className="dsm-targets">{workspaces.map((workspace) => <button key={workspace.workspaceId} className="dsm-target" data-over={over === workspace.workspaceId} onDragOver={(event) => { event.preventDefault(); setOver(workspace.workspaceId) }} onDragLeave={() => setOver(null)} onDrop={async (event) => { event.preventDefault(); event.stopPropagation(); const dropped = await filesFromDataTransfer(event.dataTransfer); setPairs(dropped); await importTo(workspace.workspaceId, dropped) }} onClick={() => importTo(workspace.workspaceId)}><strong>{workspace.title}</strong><span>{workspace.path}</span><span>{t('dropHere')}</span></button>)}</div>}
         {error && <p className="dsm-error">{error}</p>}
       </div>
     </div>}
@@ -163,6 +171,6 @@ function ImportApp({ ctx, wide = true, useWorkspaces }) {
 export const inject = ['slots', 'locale', 'sessions', 'workspaces']
 export function apply(ctx) {
   injectCss()
-  for (const [locale, dict] of Object.entries(dictionaries)) ctx.effect(() => ctx.locale.register(NS, locale, dict))
-  ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({ name: 'sidebar.footer.action', id: 'session-migrator', order: 50, inject: () => ({ ctx }) }, ImportApp))
+  ctx.effect(() => ctx.locale.register(NS, dictionaries))
+  ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({ name: 'sidebar.footer.action', id: 'session-migrator', order: 50, locale: NS, inject: () => ({ ctx }) }, ImportApp))
 }
