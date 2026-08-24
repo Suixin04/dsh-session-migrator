@@ -834,6 +834,14 @@ window.__ModuleLoader__.load({
       for (const child of children) output.push(...await entryFiles(child, `${prefix}${entry.name}/`));
       return output;
     }
+    function isMigrationTransfer(transfer) {
+      if (!transfer || ![...transfer.types].includes("Files")) return false;
+      const entries = [...transfer.items].map((item) => item.webkitGetAsEntry?.()).filter(Boolean);
+      if (entries.some((entry) => entry.isDirectory)) return true;
+      if (entries.length > 0 && entries.every((entry) => entry.isFile && /\.(zip|jsonl)$/i.test(entry.name))) return true;
+      const names = [...transfer.files].map((file) => file.name);
+      return names.length > 0 && names.every((name) => /\.(zip|jsonl)$/i.test(name));
+    }
     async function filesFromDataTransfer(transfer) {
       const entries = [...transfer.items].map((item) => item.webkitGetAsEntry?.()).filter(Boolean);
       if (entries.some((entry) => entry.isDirectory)) {
@@ -954,19 +962,34 @@ window.__ModuleLoader__.load({
         }
       };
       (0, import_react.useEffect)(() => {
-        const hasFiles = (event) => [...event.dataTransfer?.types || []].includes("Files");
+        const claim = (event) => {
+          if (!isMigrationTransfer(event.dataTransfer)) return false;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return true;
+        };
+        const targetAt = (event) => event.target?.closest?.(".dsm-target") ?? document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".dsm-target");
         const enter = (event) => {
-          if (hasFiles(event)) setOpen(true);
+          if (!claim(event)) return;
+          event.dataTransfer.dropEffect = "copy";
+          setOpen(true);
+          setOver(targetAt(event)?.dataset.workspaceId ?? null);
         };
         const overEvent = (event) => {
-          if (!hasFiles(event)) return;
-          event.preventDefault();
+          if (!claim(event)) return;
           event.dataTransfer.dropEffect = "copy";
+          setOver(targetAt(event)?.dataset.workspaceId ?? null);
+        };
+        const leave = (event) => {
+          if (!claim(event)) return;
+          const leftViewport = event.clientX <= 0 || event.clientY <= 0 || event.clientX >= window.innerWidth || event.clientY >= window.innerHeight;
+          if (leftViewport || !targetAt(event)) setOver(null);
         };
         const drop = async (event) => {
-          if (!hasFiles(event)) return;
-          event.preventDefault();
-          const target = event.target?.closest?.(".dsm-target") ?? document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".dsm-target");
+          if (!claim(event)) return;
+          const target = targetAt(event);
+          window.dispatchEvent(new Event("dragend"));
+          setOver(null);
           try {
             const dropped = await filesFromDataTransfer(event.dataTransfer);
             setPairs(dropped);
@@ -981,10 +1004,12 @@ window.__ModuleLoader__.load({
         };
         document.addEventListener("dragenter", enter, true);
         document.addEventListener("dragover", overEvent, true);
+        document.addEventListener("dragleave", leave, true);
         document.addEventListener("drop", drop, true);
         return () => {
           document.removeEventListener("dragenter", enter, true);
           document.removeEventListener("dragover", overEvent, true);
+          document.removeEventListener("dragleave", leave, true);
           document.removeEventListener("drop", drop, true);
         };
       }, [pairs, t]);

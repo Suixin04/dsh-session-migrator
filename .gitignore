@@ -4,6 +4,7 @@ node_modules/
 .dsh-integration/
 .dsh-docs/
 .dsh-fix-test/
+.dsh-conflict-test/
 .progress-test.jsonl
 .client-bundle.cjs
 .integration-*
