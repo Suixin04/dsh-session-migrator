@@ -41,6 +41,8 @@ async function importArchive(ctx, archive, workspacePath, signal, onProgress) {
     sessionPersistence: ctx.sessionPersistence,
     workspaceRegistry: ctx.workspaceRegistry,
     attachments: ctx.get('attachments'),
+    projectionCache: ctx.get('sessionProjectionCache'),
+    sessionProjections: ctx.get('sessionProjections'),
     signal,
     cloneOnConflict: true,
     onProgress,

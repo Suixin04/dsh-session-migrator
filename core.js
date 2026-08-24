@@ -284,7 +284,7 @@ async function importAttachments(archive, attachments, signal, onProgress) {
   return imported
 }
 
-export async function importMigration({ archive, workspacePath, sessionPersistence, workspaceRegistry, attachments, signal, cloneOnConflict = true, onProgress }) {
+export async function importMigration({ archive, workspacePath, sessionPersistence, workspaceRegistry, attachments, signal, cloneOnConflict = true, onProgress, projectionCache, sessionProjections }) {
   abort(signal)
   const workspace = await workspaceRegistry.create(workspacePath)
   const canonicalPath = workspace.path
@@ -305,6 +305,7 @@ export async function importMigration({ archive, workspacePath, sessionPersisten
     await sessionPersistence.create(item.header)
     if (item.events.length > 0) await sessionPersistence.append(item.id, item.events)
     await workspace.attachSession(item.id)
+    await warmProjectionCache({ item, projectionCache, sessionProjections })
     imported.push(String(item.id))
     onProgress?.({ stage: 'sessions', completed: imported.length, total: sessions.length })
   }
@@ -319,6 +320,28 @@ export async function importMigration({ archive, workspacePath, sessionPersisten
     cloned,
     idMap: Object.fromEntries(idMap),
   }
+}
+
+/**
+ * Seed the persisted projection cache for one freshly imported session so the
+ * workspace list can show its durable title (and every other projection)
+ * without the session being opened first. Both services are optional seams:
+ * the write-behind listeners only run for live sessions, so an import written
+ * straight through sessionPersistence would otherwise stay cold until first
+ * open. Best-effort and fail-soft by the upstream contract - a lost row only
+ * costs the pre-open title, never the import.
+ */
+async function warmProjectionCache({ item, projectionCache, sessionProjections }) {
+  if (!projectionCache?.putSoft || !sessionProjections?.restore || item.events.length === 0) return
+  try {
+    const { checkpoint } = sessionProjections.restore({}, item.events, 0)
+    await projectionCache.putSoft(
+      String(item.id),
+      { createdAt: item.header.createdAt, cwd: item.header.cwd },
+      checkpoint,
+      'session import warm-up',
+    )
+  } catch {}
 }
 
 export function parseImportCommand(rawInput) {

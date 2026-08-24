@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-migrator",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Visual cross-device session migration for DeepSeek Harness with drag-and-drop workspace import",
   "type": "module",
   "main": "./index.js",

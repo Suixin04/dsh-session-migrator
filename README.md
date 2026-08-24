@@ -15,6 +15,7 @@ A visual cross-device session migration plugin for [DeepSeek Harness](https://gi
 - **Safe duplicate imports** — never overwrites an existing session. If any source ID already exists, the complete tree receives new IDs while lineage and Harness provenance references are remapped together.
 - **Attachment migration** — restores referenced PNG, JPEG, WebP, and GIF objects and verifies their content-addressed IDs.
 - **Harness-native validation** — decodes storage rows with `decodeStorageRecord()` and validates each reconstructed log with `Session.create()` before writing.
+- **Immediate original titles** — warms Harness's projection cache during import, so workspace rows show their durable session titles before the sessions are opened.
 - **English and Chinese UI** — follows the active Harness language automatically.
 - **CLI fallback** — `/session-import` remains available for local, scripted workflows.
 

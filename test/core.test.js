@@ -74,10 +74,29 @@ test('imports the current export through persistence and workspace APIs', async 
     },
   }
   const progress = []
-  const result = await importMigration({ archive, workspacePath: workspace.path, sessionPersistence, workspaceRegistry, onProgress: (event) => progress.push(event) })
+  const warmed = []
+  const projectionCache = {
+    async putSoft(id, identity, rows, what) { warmed.push({ id, identity, rows, what }) },
+  }
+  const sessionProjections = {
+    restore(checkpoint, events, baseSeq) {
+      const title = events.findLast((event) => event.type === 'session/title')
+      return { snapshot: { asOfSeq: events.at(-1)?.seq ?? -1, values: {} }, checkpoint: { title: { ver: 1, seq: events.at(-1)?.seq ?? -1, val: title?.data.title ?? null } } }
+    },
+  }
+  const result = await importMigration({ archive, workspacePath: workspace.path, sessionPersistence, workspaceRegistry, onProgress: (event) => progress.push(event), projectionCache, sessionProjections })
   assert.equal(result.sessionIds.length, archive.sessions.length)
   assert.equal(progress[0].stage, 'validated')
   assert.deepEqual(progress.at(-1), { stage: 'sessions', completed: archive.sessions.length, total: archive.sessions.length })
+  assert.ok(warmed.length > 0)
+  for (const entry of warmed) {
+    assert.ok(result.sessionIds.includes(entry.id))
+    assert.equal(entry.identity.cwd, workspace.path)
+    assert.equal(entry.identity.createdAt !== undefined, true)
+    assert.equal(entry.what, 'session import warm-up')
+  }
+  assert.ok(warmed.some((entry) => typeof entry.rows.title.val === 'string'))
+  assert.ok(warmed.every((entry) => 'title' in entry.rows))
   assert.equal(calls.filter(([kind]) => kind === 'create').length, archive.sessions.length)
   assert.equal(calls.filter(([kind]) => kind === 'append').length, archive.sessions.length)
   assert.equal(calls.filter(([kind]) => kind === 'attach').length, archive.sessions.length)
@@ -89,6 +108,12 @@ test('imports the current export through persistence and workspace APIs', async 
   const cloned = await importMigration({ archive, workspacePath: workspace.path, sessionPersistence: conflictPersistence, workspaceRegistry })
   assert.equal(cloned.cloned, true)
   assert.notEqual(cloned.rootSessionId, archive.sessions[0].header.id)
+
+  const failingCache = {
+    async putSoft() { throw new Error('cache unavailable') },
+  }
+  const degraded = await importMigration({ archive, workspacePath: workspace.path, sessionPersistence: conflictPersistence, workspaceRegistry, projectionCache: failingCache, sessionProjections })
+  assert.equal(degraded.sessionIds.length, archive.sessions.length)
 })
 
 test('reads a standalone JSONL export', async () => {

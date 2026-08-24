@@ -5,7 +5,9 @@ node_modules/
 .dsh-docs/
 .dsh-fix-test/
 .dsh-conflict-test/
+.dsh-title-test/
 .progress-test.jsonl
+.title-*.jsonl
 .client-bundle.cjs
 .integration-*
 .second-import.json
