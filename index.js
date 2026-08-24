@@ -34,7 +34,7 @@ async function readBody(req) {
   return new Uint8Array(Buffer.concat(chunks, size))
 }
 
-async function importArchive(ctx, archive, workspacePath, signal) {
+async function importArchive(ctx, archive, workspacePath, signal, onProgress) {
   return importMigration({
     archive,
     workspacePath,
@@ -43,6 +43,7 @@ async function importArchive(ctx, archive, workspacePath, signal) {
     attachments: ctx.get('attachments'),
     signal,
     cloneOnConflict: true,
+    onProgress,
   })
 }
 
@@ -80,14 +81,39 @@ export function apply(ctx) {
       if (!workspace) return json(res, 404, { ok: false, error: 'Target workspace was not found' })
       const controller = new AbortController()
       req.on('aborted', () => controller.abort())
+      const streamProgress = requestUrl.searchParams.get('progress') === 'true'
+      const send = streamProgress
+        ? (message) => { if (!res.writableEnded) res.write(`${JSON.stringify(message)}\n`) }
+        : undefined
+      if (streamProgress) res.writeHead(200, {
+        'content-type': 'application/x-ndjson; charset=utf-8',
+        'cache-control': 'no-store',
+        'x-accel-buffering': 'no',
+      })
       try {
         let filename = 'session.zip'
         try { filename = decodeURIComponent(String(req.headers['x-dsh-filename'] ?? filename)) } catch {}
-        const archive = readMigrationArchiveBytes(await readBody(req), filename)
-        const result = await importArchive(ctx, archive, workspace.path, controller.signal)
+        const body = await readBody(req)
+        send?.({ type: 'progress', stage: 'parsing', percent: 64 })
+        if (streamProgress) await new Promise((resolve) => setImmediate(resolve))
+        const archive = readMigrationArchiveBytes(body, filename)
+        const result = await importArchive(ctx, archive, workspace.path, controller.signal, (progress) => {
+          if (progress.stage === 'validated') send?.({ type: 'progress', ...progress, percent: 72 })
+          else if (progress.stage === 'attachments') send?.({ type: 'progress', ...progress, percent: 72 + Math.round((progress.completed / progress.total) * 8) })
+          else if (progress.stage === 'sessions') send?.({ type: 'progress', ...progress, percent: 80 + Math.round((progress.completed / progress.total) * 19) })
+        })
+        if (streamProgress) {
+          send({ type: 'result', result })
+          return res.end()
+        }
         return json(res, 200, { ok: true, result })
       } catch (error) {
-        return json(res, 400, { ok: false, error: error instanceof Error ? error.message : String(error) })
+        const message = error instanceof Error ? error.message : String(error)
+        if (streamProgress) {
+          send({ type: 'error', error: message })
+          return res.end()
+        }
+        return json(res, 400, { ok: false, error: message })
       }
     },
   }))

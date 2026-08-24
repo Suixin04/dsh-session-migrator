@@ -262,7 +262,7 @@ export function validateMigration(archive, workspacePath, idMap = createSessionI
   return validated
 }
 
-async function importAttachments(archive, attachments, signal) {
+async function importAttachments(archive, attachments, signal, onProgress) {
   const refs = new Map()
   for (const session of archive.sessions) collectAttachmentRefs(session.events, refs)
   if (refs.size === 0) return 0
@@ -279,11 +279,12 @@ async function importAttachments(archive, attachments, signal) {
       throw new Error(`Attachment identity changed during import: expected ${attachmentId}, got ${saved.attachmentId}`)
     }
     imported += 1
+    onProgress?.({ stage: 'attachments', completed: imported, total: refs.size })
   }
   return imported
 }
 
-export async function importMigration({ archive, workspacePath, sessionPersistence, workspaceRegistry, attachments, signal, cloneOnConflict = true }) {
+export async function importMigration({ archive, workspacePath, sessionPersistence, workspaceRegistry, attachments, signal, cloneOnConflict = true, onProgress }) {
   abort(signal)
   const workspace = await workspaceRegistry.create(workspacePath)
   const canonicalPath = workspace.path
@@ -295,8 +296,9 @@ export async function importMigration({ archive, workspacePath, sessionPersisten
   const cloned = sourceConflicts.length > 0
   const idMap = createSessionIdMap(archive, cloned)
   const sessions = validateMigration(archive, canonicalPath, idMap)
+  onProgress?.({ stage: 'validated', completed: sessions.length, total: sessions.length })
 
-  const attachmentCount = await importAttachments(archive, attachments, signal)
+  const attachmentCount = await importAttachments(archive, attachments, signal, onProgress)
   const imported = []
   for (const item of sessions) {
     abort(signal)
@@ -304,6 +306,7 @@ export async function importMigration({ archive, workspacePath, sessionPersisten
     if (item.events.length > 0) await sessionPersistence.append(item.id, item.events)
     await workspace.attachSession(item.id)
     imported.push(String(item.id))
+    onProgress?.({ stage: 'sessions', completed: imported.length, total: sessions.length })
   }
 
   return {

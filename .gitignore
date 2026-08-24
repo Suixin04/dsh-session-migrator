@@ -3,6 +3,8 @@ node_modules/
 .DS_Store
 .dsh-integration/
 .dsh-docs/
+.dsh-fix-test/
+.progress-test.jsonl
 .client-bundle.cjs
 .integration-*
 .second-import.json

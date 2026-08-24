@@ -763,6 +763,13 @@ window.__ModuleLoader__.load({
         noneSelected: "\u5C1A\u672A\u9009\u62E9\u6587\u4EF6",
         missingSource: "\u8BF7\u5148\u9009\u62E9\u6216\u62D6\u5165\u4F1A\u8BDD\u5BFC\u51FA\u6587\u4EF6\u3002",
         importing: "\u6B63\u5728\u89E3\u6790\u5E76\u5BFC\u5165\u2026",
+        progressReading: "\u6B63\u5728\u8BFB\u53D6\u6587\u4EF6\u2026",
+        progressPacking: "\u6B63\u5728\u6253\u5305\u5BFC\u51FA\u6587\u4EF6\u5939\u2026",
+        progressUploading: "\u6B63\u5728\u4E0A\u4F20\u5230 Harness\u2026",
+        progressParsing: "\u6B63\u5728\u89E3\u6790\u4F1A\u8BDD\u65E5\u5FD7\u2026",
+        progressValidating: "\u6B63\u5728\u6821\u9A8C\u4F1A\u8BDD\u6811\u2026",
+        progressAttachments: "\u6B63\u5728\u6062\u590D\u9644\u4EF6\uFF08{done}/{total}\uFF09\u2026",
+        progressSessions: "\u6B63\u5728\u5199\u5165\u4F1A\u8BDD\uFF08{done}/{total}\uFF09\u2026",
         dropHere: "\u91CA\u653E\u5230\u6B64\u5DE5\u4F5C\u533A",
         success: "\u5BFC\u5165\u6210\u529F",
         clone: "\u68C0\u6D4B\u5230\u91CD\u590D\u4F1A\u8BDD\uFF0C\u5DF2\u81EA\u52A8\u521B\u5EFA\u526F\u672C\u3002",
@@ -783,6 +790,13 @@ window.__ModuleLoader__.load({
         noneSelected: "No files selected",
         missingSource: "Choose or drop a session export first.",
         importing: "Parsing and importing\u2026",
+        progressReading: "Reading files\u2026",
+        progressPacking: "Packing the export folder\u2026",
+        progressUploading: "Uploading to Harness\u2026",
+        progressParsing: "Parsing session logs\u2026",
+        progressValidating: "Validating the session tree\u2026",
+        progressAttachments: "Restoring attachments ({done}/{total})\u2026",
+        progressSessions: "Writing sessions ({done}/{total})\u2026",
         dropHere: "Drop into this workspace",
         success: "Import complete",
         clone: "A duplicate was detected and imported as a cloned session tree.",
@@ -794,7 +808,7 @@ window.__ModuleLoader__.load({
     };
     var css = `
     .dsm-button{height:32px;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);border-radius:8px;padding:0 10px;cursor:pointer;font:inherit;font-size:13px}.dsm-button:hover{background:var(--dsw-alias-interactive-bg-hover)}
-    .dsm-overlay{position:fixed;inset:0;z-index:2147483000;background:color-mix(in srgb,var(--dsw-alias-bg-mask,rgba(0,0,0,.62)) 82%,transparent);display:flex;align-items:center;justify-content:center;padding:24px}.dsm-panel{width:min(720px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;background:var(--dsw-alias-bg-layer-1,#181818);color:var(--dsw-alias-label-primary,#fff);border:1px solid var(--dsw-alias-border-l2,#444);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.35);padding:20px}.dsm-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.dsm-head h2{font-size:18px;margin:0}.dsm-hint{margin:8px 0 18px;color:var(--dsw-alias-label-secondary,#aaa);font-size:13px}.dsm-actions{display:flex;gap:8px;flex-wrap:wrap}.dsm-targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.dsm-target{min-height:86px;text-align:left;border:1px dashed var(--dsw-alias-border-l1,#666);background:var(--dsw-alias-bg-layer-2,#222);color:inherit;border-radius:12px;padding:12px;cursor:pointer}.dsm-target:hover,.dsm-target[data-over=true]{border-color:var(--dsw-alias-state-business-primary,#4f8cff);background:color-mix(in srgb,var(--dsw-alias-state-business-primary,#4f8cff) 12%,var(--dsw-alias-bg-layer-2,#222))}.dsm-target strong,.dsm-target span{display:block}.dsm-target span{margin-top:5px;color:var(--dsw-alias-label-tertiary,#888);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsm-status{padding:20px 0;text-align:center}.dsm-error{color:var(--dsw-alias-state-error-primary,#ff6b6b);white-space:pre-wrap}.dsm-success{color:var(--dsw-alias-label-primary,#fff)}
+    .dsm-overlay{position:fixed;inset:0;z-index:2147483000;background:color-mix(in srgb,var(--dsw-alias-bg-mask,rgba(0,0,0,.62)) 82%,transparent);display:flex;align-items:center;justify-content:center;padding:24px}.dsm-panel{width:min(720px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;background:var(--dsw-alias-bg-layer-1,#181818);color:var(--dsw-alias-label-primary,#fff);border:1px solid var(--dsw-alias-border-l2,#444);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.35);padding:20px}.dsm-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.dsm-head h2{font-size:18px;margin:0}.dsm-hint{margin:8px 0 18px;color:var(--dsw-alias-label-secondary,#aaa);font-size:13px}.dsm-actions{display:flex;gap:8px;flex-wrap:wrap}.dsm-targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.dsm-target{min-height:86px;text-align:left;border:1px dashed var(--dsw-alias-border-l1,#666);background:var(--dsw-alias-bg-layer-2,#222);color:inherit;border-radius:12px;padding:12px;cursor:pointer}.dsm-target:hover,.dsm-target[data-over=true]{border-color:var(--dsw-alias-state-business-primary,#4f8cff);background:color-mix(in srgb,var(--dsw-alias-state-business-primary,#4f8cff) 12%,var(--dsw-alias-bg-layer-2,#222))}.dsm-target strong,.dsm-target span{display:block}.dsm-target span{margin-top:5px;color:var(--dsw-alias-label-tertiary,#888);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsm-status{padding:20px 0;text-align:center}.dsm-progress{width:min(460px,100%);margin:18px auto 0;text-align:left}.dsm-progressLabel{display:flex;justify-content:space-between;gap:16px;margin-bottom:8px;color:var(--dsw-alias-label-secondary,#aaa);font-size:13px}.dsm-progressTrack{height:8px;overflow:hidden;border-radius:999px;background:var(--dsw-alias-bg-layer-3,#303030)}.dsm-progressFill{height:100%;border-radius:inherit;background:var(--dsw-alias-state-business-primary,#3478f6);transition:width .18s ease}.dsm-error{color:var(--dsw-alias-state-error-primary,#ff6b6b);white-space:pre-wrap}.dsm-success{color:var(--dsw-alias-label-primary,#fff)}
     `;
     function injectCss() {
       if (document.querySelector('style[data-plugin-css="dsh-session-migrator"]')) return;
@@ -829,23 +843,54 @@ window.__ModuleLoader__.load({
       }
       return [...transfer.files].map((file) => [file.webkitRelativePath || file.name, file]);
     }
-    async function archiveFromPairs(pairs) {
+    async function archiveFromPairs(pairs, onProgress) {
       if (pairs.length === 1 && /\.(zip|jsonl)$/i.test(pairs[0][1].name)) return pairs[0][1];
       const entries = {};
-      for (const [path, file] of pairs) entries[path.replaceAll("\\", "/")] = new Uint8Array(await file.arrayBuffer());
+      for (let index = 0; index < pairs.length; index += 1) {
+        const [path, file] = pairs[index];
+        entries[path.replaceAll("\\", "/")] = new Uint8Array(await file.arrayBuffer());
+        onProgress?.({ stage: "reading", percent: Math.round((index + 1) / pairs.length * 25) });
+      }
+      onProgress?.({ stage: "packing", percent: 30 });
       return new File([zipSync(entries, { level: 6 })], "dsh-session-folder.zip", { type: "application/zip" });
     }
-    async function upload(file, workspaceId, t) {
-      const url = new URL("/api/session.import", hostBase());
-      url.searchParams.set("workspaceId", workspaceId);
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/octet-stream", "x-dsh-filename": encodeURIComponent(file.name) },
-        body: file
+    function upload(file, workspaceId, t, onProgress) {
+      return new Promise((resolve, reject) => {
+        const url = new URL("/api/session.import", hostBase());
+        url.searchParams.set("workspaceId", workspaceId);
+        url.searchParams.set("progress", "true");
+        const request = new XMLHttpRequest();
+        let consumed = 0;
+        let finalResult;
+        request.open("POST", url);
+        request.setRequestHeader("content-type", "application/octet-stream");
+        request.setRequestHeader("x-dsh-filename", encodeURIComponent(file.name));
+        request.upload.onprogress = (event) => {
+          if (event.lengthComputable) onProgress?.({ stage: "uploading", percent: 30 + Math.round(event.loaded / event.total * 30) });
+        };
+        request.onprogress = () => {
+          const complete = request.responseText.slice(consumed).split("\n");
+          consumed = request.responseText.length - complete.at(-1).length;
+          for (const line of complete.slice(0, -1)) {
+            if (!line) continue;
+            try {
+              const message = JSON.parse(line);
+              if (message.type === "progress") onProgress?.(message);
+              else if (message.type === "result") finalResult = message.result;
+              else if (message.type === "error") reject(new Error(message.error));
+            } catch (reason) {
+              reject(reason);
+            }
+          }
+        };
+        request.onerror = () => reject(new Error(t("uploadFailed", { status: request.status || 0 })));
+        request.onload = () => {
+          request.onprogress();
+          if (request.status >= 200 && request.status < 300 && finalResult) resolve(finalResult);
+          else if (!finalResult) reject(new Error(t("uploadFailed", { status: request.status })));
+        };
+        request.send(file);
       });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) throw new Error(payload?.error || t("uploadFailed", { status: response.status }));
-      return payload.result;
     }
     function ImportApp({ ctx, wide = true, useWorkspaces, t }) {
       const [open, setOpen] = (0, import_react.useState)(false);
@@ -854,37 +899,28 @@ window.__ModuleLoader__.load({
       const [error, setError] = (0, import_react.useState)("");
       const [result, setResult] = (0, import_react.useState)(null);
       const [over, setOver] = (0, import_react.useState)(null);
+      const [progress, setProgress] = (0, import_react.useState)({ stage: "reading", percent: 0 });
       const fileRef = (0, import_react.useRef)(null);
       const folderRef = (0, import_react.useRef)(null);
       const workspaces = useWorkspaces((state) => state.items);
-      (0, import_react.useEffect)(() => {
-        const enter = (event) => {
-          if ([...event.dataTransfer?.types || []].includes("Files")) setOpen(true);
-        };
-        const overEvent = (event) => {
-          if ([...event.dataTransfer?.types || []].includes("Files")) event.preventDefault();
-        };
-        const drop = async (event) => {
-          if (![...event.dataTransfer?.types || []].includes("Files")) return;
-          event.preventDefault();
-          try {
-            setPairs(await filesFromDataTransfer(event.dataTransfer));
-            setOpen(true);
-            setError("");
-          } catch (reason) {
-            setError(String(reason));
-            setOpen(true);
-          }
-        };
-        document.addEventListener("dragenter", enter);
-        document.addEventListener("dragover", overEvent);
-        document.addEventListener("drop", drop);
-        return () => {
-          document.removeEventListener("dragenter", enter);
-          document.removeEventListener("dragover", overEvent);
-          document.removeEventListener("drop", drop);
-        };
-      }, []);
+      const reset = () => {
+        setPairs(null);
+        setPhase("idle");
+        setError("");
+        setResult(null);
+        setOver(null);
+        setProgress({ stage: "reading", percent: 0 });
+        if (fileRef.current) fileRef.current.value = "";
+        if (folderRef.current) folderRef.current.value = "";
+      };
+      const openDialog = () => {
+        reset();
+        setOpen(true);
+      };
+      const closeDialog = () => {
+        setOpen(false);
+        reset();
+      };
       const pickFiles = (list) => {
         const next = [...list].map((file) => [file.webkitRelativePath || file.name, file]);
         if (next.length) {
@@ -894,6 +930,7 @@ window.__ModuleLoader__.load({
           setResult(null);
         }
       };
+      const updateProgress = (next) => setProgress((current) => ({ ...current, ...next, percent: Math.max(current.percent, next.percent ?? current.percent) }));
       const importTo = async (workspaceId, sourcePairs = pairs) => {
         if (!sourcePairs?.length) {
           setError(t("missingSource"));
@@ -901,8 +938,13 @@ window.__ModuleLoader__.load({
         }
         setPhase("importing");
         setError("");
+        setResult(null);
+        setOver(null);
+        setProgress({ stage: "reading", percent: 2 });
         try {
-          const imported = await upload(await archiveFromPairs(sourcePairs), workspaceId, t);
+          const archive = await archiveFromPairs(sourcePairs, updateProgress);
+          const imported = await upload(archive, workspaceId, t, updateProgress);
+          setProgress({ stage: "sessions", percent: 100, completed: imported.sessionIds.length, total: imported.sessionIds.length });
           setResult(imported);
           setPhase("done");
           await Promise.allSettled([ctx.sessions.refresh?.(), ctx.workspaces.refresh?.()]);
@@ -911,40 +953,89 @@ window.__ModuleLoader__.load({
           setPhase("idle");
         }
       };
+      (0, import_react.useEffect)(() => {
+        const hasFiles = (event) => [...event.dataTransfer?.types || []].includes("Files");
+        const enter = (event) => {
+          if (hasFiles(event)) setOpen(true);
+        };
+        const overEvent = (event) => {
+          if (!hasFiles(event)) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+        };
+        const drop = async (event) => {
+          if (!hasFiles(event)) return;
+          event.preventDefault();
+          const target = event.target?.closest?.(".dsm-target") ?? document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".dsm-target");
+          try {
+            const dropped = await filesFromDataTransfer(event.dataTransfer);
+            setPairs(dropped);
+            setOpen(true);
+            setError("");
+            setResult(null);
+            if (target?.dataset.workspaceId) await importTo(target.dataset.workspaceId, dropped);
+          } catch (reason) {
+            setError(reason instanceof Error ? reason.message : String(reason));
+            setOpen(true);
+          }
+        };
+        document.addEventListener("dragenter", enter, true);
+        document.addEventListener("dragover", overEvent, true);
+        document.addEventListener("drop", drop, true);
+        return () => {
+          document.removeEventListener("dragenter", enter, true);
+          document.removeEventListener("dragover", overEvent, true);
+          document.removeEventListener("drop", drop, true);
+        };
+      }, [pairs, t]);
+      const progressKey = progress.stage === "reading" ? "progressReading" : progress.stage === "packing" ? "progressPacking" : progress.stage === "uploading" ? "progressUploading" : progress.stage === "parsing" ? "progressParsing" : progress.stage === "validated" ? "progressValidating" : progress.stage === "attachments" ? "progressAttachments" : progress.stage === "sessions" ? "progressSessions" : "importing";
+      const progressText = t(progressKey, { done: progress.completed ?? 0, total: progress.total ?? 0 });
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", title: t("buttonTitle"), onClick: () => setOpen(true), children: wide ? t("button") : "\u21E9" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", title: t("buttonTitle"), onClick: openDialog, children: wide ? t("button") : "\u21E9" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { ref: fileRef, hidden: true, type: "file", accept: ".zip,.jsonl,application/zip", onChange: (event) => pickFiles(event.target.files) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { ref: folderRef, hidden: true, type: "file", webkitdirectory: "", directory: "", multiple: true, onChange: (event) => pickFiles(event.target.files) }),
         open && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-overlay", onMouseDown: (event) => {
-          if (event.target === event.currentTarget && phase !== "importing") setOpen(false);
+          if (event.target === event.currentTarget && phase !== "importing") closeDialog();
         }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-panel", role: "dialog", "aria-modal": "true", "aria-label": t("title"), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: t("title") }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", disabled: phase === "importing", onClick: () => setOpen(false), children: t("close") })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", disabled: phase === "importing", onClick: closeDialog, children: t("close") })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-hint", children: t("intro") }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => fileRef.current?.click(), children: t("chooseArchive") }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => folderRef.current?.click(), children: t("chooseFolder") })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", disabled: phase === "importing", onClick: () => fileRef.current?.click(), children: t("chooseArchive") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", disabled: phase === "importing", onClick: () => folderRef.current?.click(), children: t("chooseFolder") })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsm-hint", children: pairs?.length ? t("selected", { n: pairs.length }) : t("noneSelected") }),
-          phase === "importing" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-status", children: t("importing") }) : result ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-status dsm-success", children: [
+          phase === "importing" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-status", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: t("importing") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-progress", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-progressLabel", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: progressText }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                  progress.percent,
+                  "%"
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-progressTrack", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-progressFill", style: { width: `${progress.percent}%` } }) })
+            ] })
+          ] }) : result ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsm-status dsm-success", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: t("success") }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: result.cloned ? t("clone") : t("original") }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: t("summary", { n: result.sessionIds.length, id: result.rootSessionId }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "dsm-button", onClick: () => {
               ctx.sessions.open(result.rootSessionId);
-              setOpen(false);
+              closeDialog();
             }, children: t("open") })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-targets", children: workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: "dsm-target", "data-over": over === workspace.workspaceId, onDragOver: (event) => {
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "dsm-targets", children: workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { "data-workspace-id": workspace.workspaceId, className: "dsm-target", "data-over": over === workspace.workspaceId, onDragEnter: (event) => {
             event.preventDefault();
             setOver(workspace.workspaceId);
-          }, onDragLeave: () => setOver(null), onDrop: async (event) => {
+          }, onDragOver: (event) => {
             event.preventDefault();
-            event.stopPropagation();
-            const dropped = await filesFromDataTransfer(event.dataTransfer);
-            setPairs(dropped);
-            await importTo(workspace.workspaceId, dropped);
+            event.dataTransfer.dropEffect = "copy";
+            setOver(workspace.workspaceId);
+          }, onDragLeave: (event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setOver(null);
           }, onClick: () => importTo(workspace.workspaceId), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: workspace.title }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: workspace.path }),

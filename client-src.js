@@ -15,6 +15,13 @@ const dictionaries = {
     noneSelected: '尚未选择文件',
     missingSource: '请先选择或拖入会话导出文件。',
     importing: '正在解析并导入…',
+    progressReading: '正在读取文件…',
+    progressPacking: '正在打包导出文件夹…',
+    progressUploading: '正在上传到 Harness…',
+    progressParsing: '正在解析会话日志…',
+    progressValidating: '正在校验会话树…',
+    progressAttachments: '正在恢复附件（{done}/{total}）…',
+    progressSessions: '正在写入会话（{done}/{total}）…',
     dropHere: '释放到此工作区',
     success: '导入成功',
     clone: '检测到重复会话，已自动创建副本。',
@@ -35,6 +42,13 @@ const dictionaries = {
     noneSelected: 'No files selected',
     missingSource: 'Choose or drop a session export first.',
     importing: 'Parsing and importing…',
+    progressReading: 'Reading files…',
+    progressPacking: 'Packing the export folder…',
+    progressUploading: 'Uploading to Harness…',
+    progressParsing: 'Parsing session logs…',
+    progressValidating: 'Validating the session tree…',
+    progressAttachments: 'Restoring attachments ({done}/{total})…',
+    progressSessions: 'Writing sessions ({done}/{total})…',
     dropHere: 'Drop into this workspace',
     success: 'Import complete',
     clone: 'A duplicate was detected and imported as a cloned session tree.',
@@ -47,7 +61,7 @@ const dictionaries = {
 
 const css = `
 .dsm-button{height:32px;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);border-radius:8px;padding:0 10px;cursor:pointer;font:inherit;font-size:13px}.dsm-button:hover{background:var(--dsw-alias-interactive-bg-hover)}
-.dsm-overlay{position:fixed;inset:0;z-index:2147483000;background:color-mix(in srgb,var(--dsw-alias-bg-mask,rgba(0,0,0,.62)) 82%,transparent);display:flex;align-items:center;justify-content:center;padding:24px}.dsm-panel{width:min(720px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;background:var(--dsw-alias-bg-layer-1,#181818);color:var(--dsw-alias-label-primary,#fff);border:1px solid var(--dsw-alias-border-l2,#444);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.35);padding:20px}.dsm-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.dsm-head h2{font-size:18px;margin:0}.dsm-hint{margin:8px 0 18px;color:var(--dsw-alias-label-secondary,#aaa);font-size:13px}.dsm-actions{display:flex;gap:8px;flex-wrap:wrap}.dsm-targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.dsm-target{min-height:86px;text-align:left;border:1px dashed var(--dsw-alias-border-l1,#666);background:var(--dsw-alias-bg-layer-2,#222);color:inherit;border-radius:12px;padding:12px;cursor:pointer}.dsm-target:hover,.dsm-target[data-over=true]{border-color:var(--dsw-alias-state-business-primary,#4f8cff);background:color-mix(in srgb,var(--dsw-alias-state-business-primary,#4f8cff) 12%,var(--dsw-alias-bg-layer-2,#222))}.dsm-target strong,.dsm-target span{display:block}.dsm-target span{margin-top:5px;color:var(--dsw-alias-label-tertiary,#888);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsm-status{padding:20px 0;text-align:center}.dsm-error{color:var(--dsw-alias-state-error-primary,#ff6b6b);white-space:pre-wrap}.dsm-success{color:var(--dsw-alias-label-primary,#fff)}
+.dsm-overlay{position:fixed;inset:0;z-index:2147483000;background:color-mix(in srgb,var(--dsw-alias-bg-mask,rgba(0,0,0,.62)) 82%,transparent);display:flex;align-items:center;justify-content:center;padding:24px}.dsm-panel{width:min(720px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;background:var(--dsw-alias-bg-layer-1,#181818);color:var(--dsw-alias-label-primary,#fff);border:1px solid var(--dsw-alias-border-l2,#444);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.35);padding:20px}.dsm-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.dsm-head h2{font-size:18px;margin:0}.dsm-hint{margin:8px 0 18px;color:var(--dsw-alias-label-secondary,#aaa);font-size:13px}.dsm-actions{display:flex;gap:8px;flex-wrap:wrap}.dsm-targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.dsm-target{min-height:86px;text-align:left;border:1px dashed var(--dsw-alias-border-l1,#666);background:var(--dsw-alias-bg-layer-2,#222);color:inherit;border-radius:12px;padding:12px;cursor:pointer}.dsm-target:hover,.dsm-target[data-over=true]{border-color:var(--dsw-alias-state-business-primary,#4f8cff);background:color-mix(in srgb,var(--dsw-alias-state-business-primary,#4f8cff) 12%,var(--dsw-alias-bg-layer-2,#222))}.dsm-target strong,.dsm-target span{display:block}.dsm-target span{margin-top:5px;color:var(--dsw-alias-label-tertiary,#888);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsm-status{padding:20px 0;text-align:center}.dsm-progress{width:min(460px,100%);margin:18px auto 0;text-align:left}.dsm-progressLabel{display:flex;justify-content:space-between;gap:16px;margin-bottom:8px;color:var(--dsw-alias-label-secondary,#aaa);font-size:13px}.dsm-progressTrack{height:8px;overflow:hidden;border-radius:999px;background:var(--dsw-alias-bg-layer-3,#303030)}.dsm-progressFill{height:100%;border-radius:inherit;background:var(--dsw-alias-state-business-primary,#3478f6);transition:width .18s ease}.dsm-error{color:var(--dsw-alias-state-error-primary,#ff6b6b);white-space:pre-wrap}.dsm-success{color:var(--dsw-alias-label-primary,#fff)}
 `
 
 function injectCss() {
@@ -87,24 +101,55 @@ async function filesFromDataTransfer(transfer) {
   return [...transfer.files].map((file) => [file.webkitRelativePath || file.name, file])
 }
 
-async function archiveFromPairs(pairs) {
+async function archiveFromPairs(pairs, onProgress) {
   if (pairs.length === 1 && /\.(zip|jsonl)$/i.test(pairs[0][1].name)) return pairs[0][1]
   const entries = {}
-  for (const [path, file] of pairs) entries[path.replaceAll('\\', '/')] = new Uint8Array(await file.arrayBuffer())
+  for (let index = 0; index < pairs.length; index += 1) {
+    const [path, file] = pairs[index]
+    entries[path.replaceAll('\\', '/')] = new Uint8Array(await file.arrayBuffer())
+    onProgress?.({ stage: 'reading', percent: Math.round(((index + 1) / pairs.length) * 25) })
+  }
+  onProgress?.({ stage: 'packing', percent: 30 })
   return new File([zipSync(entries, { level: 6 })], 'dsh-session-folder.zip', { type: 'application/zip' })
 }
 
-async function upload(file, workspaceId, t) {
-  const url = new URL('/api/session.import', hostBase())
-  url.searchParams.set('workspaceId', workspaceId)
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/octet-stream', 'x-dsh-filename': encodeURIComponent(file.name) },
-    body: file,
+function upload(file, workspaceId, t, onProgress) {
+  return new Promise((resolve, reject) => {
+    const url = new URL('/api/session.import', hostBase())
+    url.searchParams.set('workspaceId', workspaceId)
+    url.searchParams.set('progress', 'true')
+    const request = new XMLHttpRequest()
+    let consumed = 0
+    let finalResult
+    request.open('POST', url)
+    request.setRequestHeader('content-type', 'application/octet-stream')
+    request.setRequestHeader('x-dsh-filename', encodeURIComponent(file.name))
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress?.({ stage: 'uploading', percent: 30 + Math.round((event.loaded / event.total) * 30) })
+    }
+    request.onprogress = () => {
+      const complete = request.responseText.slice(consumed).split('\n')
+      consumed = request.responseText.length - complete.at(-1).length
+      for (const line of complete.slice(0, -1)) {
+        if (!line) continue
+        try {
+          const message = JSON.parse(line)
+          if (message.type === 'progress') onProgress?.(message)
+          else if (message.type === 'result') finalResult = message.result
+          else if (message.type === 'error') reject(new Error(message.error))
+        } catch (reason) {
+          reject(reason)
+        }
+      }
+    }
+    request.onerror = () => reject(new Error(t('uploadFailed', { status: request.status || 0 })))
+    request.onload = () => {
+      request.onprogress()
+      if (request.status >= 200 && request.status < 300 && finalResult) resolve(finalResult)
+      else if (!finalResult) reject(new Error(t('uploadFailed', { status: request.status })))
+    }
+    request.send(file)
   })
-  const payload = await response.json().catch(() => null)
-  if (!response.ok || !payload?.ok) throw new Error(payload?.error || t('uploadFailed', { status: response.status }))
-  return payload.result
 }
 
 function ImportApp({ ctx, wide = true, useWorkspaces, t }) {
@@ -114,54 +159,93 @@ function ImportApp({ ctx, wide = true, useWorkspaces, t }) {
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
   const [over, setOver] = useState(null)
+  const [progress, setProgress] = useState({ stage: 'reading', percent: 0 })
   const fileRef = useRef(null)
   const folderRef = useRef(null)
   const workspaces = useWorkspaces((state) => state.items)
 
-  useEffect(() => {
-    const enter = (event) => {
-      if ([...event.dataTransfer?.types || []].includes('Files')) setOpen(true)
-    }
-    const overEvent = (event) => {
-      if ([...event.dataTransfer?.types || []].includes('Files')) event.preventDefault()
-    }
-    const drop = async (event) => {
-      if (![...event.dataTransfer?.types || []].includes('Files')) return
-      event.preventDefault()
-      try { setPairs(await filesFromDataTransfer(event.dataTransfer)); setOpen(true); setError('') }
-      catch (reason) { setError(String(reason)); setOpen(true) }
-    }
-    document.addEventListener('dragenter', enter)
-    document.addEventListener('dragover', overEvent)
-    document.addEventListener('drop', drop)
-    return () => { document.removeEventListener('dragenter', enter); document.removeEventListener('dragover', overEvent); document.removeEventListener('drop', drop) }
-  }, [])
+  const reset = () => {
+    setPairs(null)
+    setPhase('idle')
+    setError('')
+    setResult(null)
+    setOver(null)
+    setProgress({ stage: 'reading', percent: 0 })
+    if (fileRef.current) fileRef.current.value = ''
+    if (folderRef.current) folderRef.current.value = ''
+  }
+  const openDialog = () => { reset(); setOpen(true) }
+  const closeDialog = () => { setOpen(false); reset() }
 
   const pickFiles = (list) => {
     const next = [...list].map((file) => [file.webkitRelativePath || file.name, file])
     if (next.length) { setPairs(next); setOpen(true); setError(''); setResult(null) }
   }
+  const updateProgress = (next) => setProgress((current) => ({ ...current, ...next, percent: Math.max(current.percent, next.percent ?? current.percent) }))
   const importTo = async (workspaceId, sourcePairs = pairs) => {
     if (!sourcePairs?.length) { setError(t('missingSource')); return }
-    setPhase('importing'); setError('')
+    setPhase('importing'); setError(''); setResult(null); setOver(null)
+    setProgress({ stage: 'reading', percent: 2 })
     try {
-      const imported = await upload(await archiveFromPairs(sourcePairs), workspaceId, t)
+      const archive = await archiveFromPairs(sourcePairs, updateProgress)
+      const imported = await upload(archive, workspaceId, t, updateProgress)
+      setProgress({ stage: 'sessions', percent: 100, completed: imported.sessionIds.length, total: imported.sessionIds.length })
       setResult(imported); setPhase('done')
       await Promise.allSettled([ctx.sessions.refresh?.(), ctx.workspaces.refresh?.()])
     } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); setPhase('idle') }
   }
 
+  useEffect(() => {
+    const hasFiles = (event) => [...event.dataTransfer?.types || []].includes('Files')
+    const enter = (event) => {
+      if (hasFiles(event)) setOpen(true)
+    }
+    const overEvent = (event) => {
+      if (!hasFiles(event)) return
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+    }
+    const drop = async (event) => {
+      if (!hasFiles(event)) return
+      event.preventDefault()
+      const target = event.target?.closest?.('.dsm-target') ?? document.elementFromPoint(event.clientX, event.clientY)?.closest?.('.dsm-target')
+      try {
+        const dropped = await filesFromDataTransfer(event.dataTransfer)
+        setPairs(dropped); setOpen(true); setError(''); setResult(null)
+        if (target?.dataset.workspaceId) await importTo(target.dataset.workspaceId, dropped)
+      } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); setOpen(true) }
+    }
+    document.addEventListener('dragenter', enter, true)
+    document.addEventListener('dragover', overEvent, true)
+    document.addEventListener('drop', drop, true)
+    return () => {
+      document.removeEventListener('dragenter', enter, true)
+      document.removeEventListener('dragover', overEvent, true)
+      document.removeEventListener('drop', drop, true)
+    }
+  }, [pairs, t])
+
+  const progressKey = progress.stage === 'reading' ? 'progressReading'
+    : progress.stage === 'packing' ? 'progressPacking'
+      : progress.stage === 'uploading' ? 'progressUploading'
+        : progress.stage === 'parsing' ? 'progressParsing'
+          : progress.stage === 'validated' ? 'progressValidating'
+            : progress.stage === 'attachments' ? 'progressAttachments'
+              : progress.stage === 'sessions' ? 'progressSessions'
+                : 'importing'
+  const progressText = t(progressKey, { done: progress.completed ?? 0, total: progress.total ?? 0 })
+
   return <>
-    <button className="dsm-button" title={t('buttonTitle')} onClick={() => setOpen(true)}>{wide ? t('button') : '⇩'}</button>
+    <button className="dsm-button" title={t('buttonTitle')} onClick={openDialog}>{wide ? t('button') : '⇩'}</button>
     <input ref={fileRef} hidden type="file" accept=".zip,.jsonl,application/zip" onChange={(event) => pickFiles(event.target.files)} />
     <input ref={folderRef} hidden type="file" webkitdirectory="" directory="" multiple onChange={(event) => pickFiles(event.target.files)} />
-    {open && <div className="dsm-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget && phase !== 'importing') setOpen(false) }}>
+    {open && <div className="dsm-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget && phase !== 'importing') closeDialog() }}>
       <div className="dsm-panel" role="dialog" aria-modal="true" aria-label={t('title')}>
-        <div className="dsm-head"><h2>{t('title')}</h2><button className="dsm-button" disabled={phase === 'importing'} onClick={() => setOpen(false)}>{t('close')}</button></div>
+        <div className="dsm-head"><h2>{t('title')}</h2><button className="dsm-button" disabled={phase === 'importing'} onClick={closeDialog}>{t('close')}</button></div>
         <p className="dsm-hint">{t('intro')}</p>
-        <div className="dsm-actions"><button className="dsm-button" onClick={() => fileRef.current?.click()}>{t('chooseArchive')}</button><button className="dsm-button" onClick={() => folderRef.current?.click()}>{t('chooseFolder')}</button></div>
+        <div className="dsm-actions"><button className="dsm-button" disabled={phase === 'importing'} onClick={() => fileRef.current?.click()}>{t('chooseArchive')}</button><button className="dsm-button" disabled={phase === 'importing'} onClick={() => folderRef.current?.click()}>{t('chooseFolder')}</button></div>
         <p className="dsm-hint">{pairs?.length ? t('selected', { n: pairs.length }) : t('noneSelected')}</p>
-        {phase === 'importing' ? <div className="dsm-status">{t('importing')}</div> : result ? <div className="dsm-status dsm-success"><strong>{t('success')}</strong><p>{result.cloned ? t('clone') : t('original')}</p><p>{t('summary', { n: result.sessionIds.length, id: result.rootSessionId })}</p><button className="dsm-button" onClick={() => { ctx.sessions.open(result.rootSessionId); setOpen(false) }}>{t('open')}</button></div> : <div className="dsm-targets">{workspaces.map((workspace) => <button key={workspace.workspaceId} className="dsm-target" data-over={over === workspace.workspaceId} onDragOver={(event) => { event.preventDefault(); setOver(workspace.workspaceId) }} onDragLeave={() => setOver(null)} onDrop={async (event) => { event.preventDefault(); event.stopPropagation(); const dropped = await filesFromDataTransfer(event.dataTransfer); setPairs(dropped); await importTo(workspace.workspaceId, dropped) }} onClick={() => importTo(workspace.workspaceId)}><strong>{workspace.title}</strong><span>{workspace.path}</span><span>{t('dropHere')}</span></button>)}</div>}
+        {phase === 'importing' ? <div className="dsm-status"><strong>{t('importing')}</strong><div className="dsm-progress"><div className="dsm-progressLabel"><span>{progressText}</span><span>{progress.percent}%</span></div><div className="dsm-progressTrack"><div className="dsm-progressFill" style={{ width: `${progress.percent}%` }} /></div></div></div> : result ? <div className="dsm-status dsm-success"><strong>{t('success')}</strong><p>{result.cloned ? t('clone') : t('original')}</p><p>{t('summary', { n: result.sessionIds.length, id: result.rootSessionId })}</p><button className="dsm-button" onClick={() => { ctx.sessions.open(result.rootSessionId); closeDialog() }}>{t('open')}</button></div> : <div className="dsm-targets">{workspaces.map((workspace) => <button key={workspace.workspaceId} data-workspace-id={workspace.workspaceId} className="dsm-target" data-over={over === workspace.workspaceId} onDragEnter={(event) => { event.preventDefault(); setOver(workspace.workspaceId) }} onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setOver(workspace.workspaceId) }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOver(null) }} onClick={() => importTo(workspace.workspaceId)}><strong>{workspace.title}</strong><span>{workspace.path}</span><span>{t('dropHere')}</span></button>)}</div>}
         {error && <p className="dsm-error">{error}</p>}
       </div>
     </div>}

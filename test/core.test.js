@@ -73,8 +73,11 @@ test('imports the current export through persistence and workspace APIs', async 
       return workspace
     },
   }
-  const result = await importMigration({ archive, workspacePath: workspace.path, sessionPersistence, workspaceRegistry })
+  const progress = []
+  const result = await importMigration({ archive, workspacePath: workspace.path, sessionPersistence, workspaceRegistry, onProgress: (event) => progress.push(event) })
   assert.equal(result.sessionIds.length, archive.sessions.length)
+  assert.equal(progress[0].stage, 'validated')
+  assert.deepEqual(progress.at(-1), { stage: 'sessions', completed: archive.sessions.length, total: archive.sessions.length })
   assert.equal(calls.filter(([kind]) => kind === 'create').length, archive.sessions.length)
   assert.equal(calls.filter(([kind]) => kind === 'append').length, archive.sessions.length)
   assert.equal(calls.filter(([kind]) => kind === 'attach').length, archive.sessions.length)
